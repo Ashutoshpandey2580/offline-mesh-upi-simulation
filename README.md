@@ -90,33 +90,31 @@ MySQL Database
 
 ## Main Dashboard
 
-![Dashboard](images/dashboard-main.png)
+![Dashboard](https://raw.githubusercontent.com/Ashutoshpandey2580/offline-mesh-upi-simulation/main/images/dashboard-main.png)
 
 ---
 
 ## Mesh State API
 
-![Mesh State](images/postman-mesh-state.png)
+![Mesh State](https://raw.githubusercontent.com/Ashutoshpandey2580/offline-mesh-upi-simulation/main/images/postman-mesh-state.png)
 
 ---
 
 ## Account Balances API
 
-![Balances](images/postman-balance.png)
+![Balances](https://raw.githubusercontent.com/Ashutoshpandey2580/offline-mesh-upi-simulation/main/images/postman-balances.png)
 
 ---
 
 ## Transactions API
 
-![Transactions](images/postman-transaction.png)
+![Transactions](https://raw.githubusercontent.com/Ashutoshpandey2580/offline-mesh-upi-simulation/main/images/postman-transactions.png)
 
 ---
 
 ## Swagger Documentation
 
-![Swagger](images/swaggerdocumentation-ui.png)
-
----
+![Swagger](https://raw.githubusercontent.com/Ashutoshpandey2580/offline-mesh-upi-simulation/main/images/swaggerdocumentation-ui.png)
 
 # How To Run
 
