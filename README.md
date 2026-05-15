@@ -114,7 +114,7 @@ MySQL Database
 
 ## Swagger Documentation
 
-![Swagger](images/swagger documentation-ui.png)
+![Swagger](images/swaggerdocumentation-ui.png)
 
 ---
 
