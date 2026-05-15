@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Offline Mesh UPI</title>
+
+    <style>
+
+        body{
+            background:#0f172a;
+            color:white;
+            font-family:Arial,sans-serif;
+            padding:30px;
+            margin:0;
+        }
+
+        h1{
+            margin-bottom:25px;
+        }
+
+        .buttons{
+            margin-bottom:20px;
+        }
+
+        button{
+            padding:12px 18px;
+            margin-right:10px;
+            margin-top:10px;
+            border:none;
+            border-radius:10px;
+            cursor:pointer;
+            background:#2563eb;
+            color:white;
+            font-weight:bold;
+            transition:0.3s;
+        }
+
+        button:hover{
+            background:#1d4ed8;
+        }
+
+        .card{
+            background:#1e293b;
+            padding:20px;
+            border-radius:15px;
+            margin-top:20px;
+        }
+
+        .network{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin-top:30px;
+            flex-wrap:wrap;
+        }
+
+        .node{
+            width:100px;
+            height:100px;
+            border-radius:50%;
+            background:#334155;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:bold;
+            transition:0.4s;
+            text-align:center;
+        }
+
+        .line{
+            width:80px;
+            height:5px;
+            background:#475569;
+        }
+
+        .active{
+            background:#22c55e !important;
+            transform:scale(1.1);
+        }
+
+        .uploaded{
+            background:#2563eb !important;
+        }
+
+        .device{
+            background:#334155;
+            padding:15px;
+            border-radius:10px;
+            margin-top:10px;
+        }
+
+        .balance-card{
+            background:#334155;
+            padding:15px;
+            border-radius:10px;
+            margin-top:10px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
+
+        th,td{
+            padding:12px;
+            border-bottom:1px solid #475569;
+            text-align:left;
+        }
+
+        .log{
+            background:#334155;
+            padding:10px;
+            border-radius:8px;
+            margin-top:10px;
+        }
+
+        .success{
+            color:#22c55e;
+            font-weight:bold;
+        }
+
+        .duplicate{
+            color:#facc15;
+            font-weight:bold;
+        }
+
+        .invalid{
+            color:#ef4444;
+            font-weight:bold;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<h1>Offline Mesh UPI Dashboard</h1>
+
+<!-- BUTTONS -->
+
+<div class="buttons">
+
+    <button onclick="createPacket()">
+        Create Packet
+    </button>
+
+    <button onclick="gossip()">
+        Run Gossip
+    </button>
+
+    <button onclick="flushBridges()">
+        Flush Bridges
+    </button>
+
+    <button onclick="resetMesh()">
+        Reset Mesh
+    </button>
+
+    <button onclick="refreshAll()">
+        Refresh
+    </button>
+
+</div>
+
+<!-- BALANCES -->
+<div class="card">
+
+    <h2>Account Balances</h2>
+
+    <table id="balances">
+
+        <thead>
+        <tr>
+            <th>User</th>
+            <th>Balance</th>
+        </tr>
+        </thead>
+
+        <tbody></tbody>
+
+    </table>
+
+</div>
+
+<!-- NETWORK -->
+
+<div class="card">
+
+    <h2>Mesh Network</h2>
+
+    <div class="network">
+
+        <div class="node"
+             id="alice">
+            Alice
+        </div>
+
+        <div class="line"></div>
+
+        <div class="node"
+             id="stranger">
+            Stranger
+        </div>
+
+        <div class="line"></div>
+
+        <div class="node"
+             id="bridge">
+            Bridge
+        </div>
+
+        <div class="line"></div>
+
+        <div class="node"
+             id="backend">
+            Backend
+        </div>
+
+    </div>
+
+</div>
+
+<!-- DEVICES -->
+
+<div class="card">
+
+    <h2>Devices</h2>
+
+    <div id="devices"></div>
+
+</div>
+
+<!-- TRANSACTIONS -->
+
+<div class="card">
+
+    <h2>Transactions</h2>
+
+    <table id="transactions">
+
+        <thead>
+
+        <tr>
+            <th>Sender</th>
+            <th>Receiver</th>
+            <th>Amount</th>
+            <th>Status</th>
+        </tr>
+
+        </thead>
+
+        <tbody></tbody>
+
+    </table>
+
+</div>
+
+<!-- LOGS -->
+
+<div class="card">
+
+    <h2>System Logs</h2>
+
+    <div id="logs"></div>
+
+</div>
+
+<script>
+
+    // =========================
+    // LOGS
+    // =========================
+
+    function addLog(message){
+
+        let logs =
+            document.getElementById('logs');
+
+        logs.innerHTML =
+            `<div class="log">${message}</div>`
+            + logs.innerHTML;
+    }
+
+    // =========================
+    // CREATE PACKET
+    // =========================
+
+    async function createPacket(){
+
+        addLog("Creating packet...");
+
+        let response =
+            await fetch('/api/demo/create-packet',{
+
+                method:'POST'
+            });
+
+        let packet =
+            await response.json();
+
+        await fetch('/api/mesh/inject',{
+
+            method:'POST',
+
+            headers:{
+                'Content-Type':'application/json'
+            },
+
+            body:JSON.stringify(packet)
+        });
+
+        addLog("Packet injected into mesh.");
+
+        activateNode('alice');
+
+        setTimeout(resetNodes,1000);
+
+        refreshAll();
+    }
+
+    // =========================
+    // GOSSIP
+    // =========================
+
+    async function gossip(){
+
+        await fetch('/api/mesh/gossip',{
+
+            method:'POST'
+        });
+
+        addLog("Packet propagated through mesh.");
+
+        animateFlow();
+
+        refreshAll();
+    }
+
+    // =========================
+    // FLUSH BRIDGES
+    // =========================
+
+    async function flushBridges(){
+
+        await fetch('/api/mesh/flush',{
+
+            method:'POST'
+        });
+
+        addLog("Bridge uploaded packets to backend.");
+
+        document.getElementById('backend')
+            .classList.add('uploaded');
+
+        refreshAll();
+    }
+
+    // =========================
+    // RESET
+    // =========================
+
+    async function resetMesh(){
+
+        await fetch('/api/mesh/reset',{
+
+            method:'POST'
+        });
+
+        addLog("Mesh reset.");
+
+        resetNodes();
+
+        refreshAll();
+    }
+
+    // =========================
+    // REFRESH
+    // =========================
+
+    async function refreshAll(){
+
+        await loadState();
+
+        await loadBalances();
+
+        await loadTransactions();
+    }
+
+    // =========================
+    // LOAD DEVICES
+    // =========================
+
+    async function loadState(){
+
+        let response =
+            await fetch('/api/mesh/state');
+
+        let data =
+            await response.json();
+
+        console.log(data);
+
+        let devices =
+            data.devices;
+
+        let html = "";
+
+        devices.forEach(device => {
+
+            html += `
+
+                <div class="device">
+
+                    <h3>${device.deviceId}</h3>
+
+                    <p>
+                        Packets:
+                        ${device.packets.length}
+                    </p>
+
+                    <p>
+                        Internet:
+                        ${device.hasInternet}
+                    </p>
+
+                </div>
+            `;
+        });
+
+        document.getElementById('devices')
+            .innerHTML = html;
+    }
+
+    // =========================
+    // LOAD BALANCES
+    // =========================
+
+    async function loadBalances(){
+
+        let response =
+            await fetch('/api/accounts');
+
+        let accounts =
+            await response.json();
+
+        console.log(accounts);
+
+        let rows = "";
+
+        accounts.forEach(acc => {
+
+            rows += `
+
+                <tr>
+
+                    <td>${acc.owner}</td>
+
+                    <td>₹${acc.balance}</td>
+
+                </tr>
+            `;
+        });
+
+        document.querySelector(
+            '#balances tbody'
+        ).innerHTML = rows;
+    }
+
+    // =========================
+    // LOAD TRANSACTIONS
+    // =========================
+
+    async function loadTransactions(){
+
+        let response =
+            await fetch('/api/transactions');
+
+        let transactions =
+            await response.json();
+
+        console.log(transactions);
+
+        let rows = "";
+
+        transactions.forEach(tx => {
+
+            rows += `
+
+                <tr>
+
+                    <td>${tx.sender}</td>
+
+                    <td>${tx.receiver}</td>
+
+                    <td>₹${tx.amount}</td>
+
+                    <td class="success">
+                        SETTLED
+                    </td>
+
+                </tr>
+            `;
+        });
+
+        document.querySelector(
+            '#transactions tbody'
+        ).innerHTML = rows;
+    }
+
+    // =========================
+    // ANIMATION
+    // =========================
+
+    async function animateFlow(){
+
+        resetNodes();
+
+        activateNode('alice');
+
+        await sleep(700);
+
+        activateNode('stranger');
+
+        await sleep(700);
+
+        activateNode('bridge');
+
+        await sleep(700);
+
+        activateNode('backend');
+
+        addLog("Packet reached backend.");
+
+        setTimeout(resetNodes,1500);
+    }
+
+    function activateNode(id){
+
+        document.getElementById(id)
+            .classList.add('active');
+    }
+
+    function resetNodes(){
+
+        document.querySelectorAll('.node')
+            .forEach(node => {
+
+                node.classList.remove(
+                    'active',
+                    'uploaded'
+                );
+            });
+    }
+
+    function sleep(ms){
+
+        return new Promise(resolve =>
+            setTimeout(resolve, ms)
+        );
+    }
+
+    // =========================
+    // INITIAL LOAD
+    // =========================
+
+    refreshAll();
+
+</script>
+</body>
+
+</html>
