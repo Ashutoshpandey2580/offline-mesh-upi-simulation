@@ -1,6 +1,6 @@
 # Offline Mesh UPI System
 
-A distributed offline-first payment simulation system inspired by real-world UPI resilience architecture.
+Built a distributed offline-first payment simulation system using Java, Spring Boot, MySQL, and gossip-based mesh propagation concepts.
 
 This project demonstrates how payment packets can propagate across nearby devices using a mesh network when internet connectivity is unavailable. Once a bridge device gets internet access, packets are synchronized with the backend settlement engine.
 
@@ -19,6 +19,20 @@ This project demonstrates how payment packets can propagate across nearby device
 - REST APIs using Spring Boot
 - MySQL database integration
 - Swagger API documentation
+
+---
+
+# Project Purpose
+
+This project is a distributed systems simulation inspired by offline-first payment architectures.
+
+The goal of the project is to demonstrate:
+- offline packet propagation
+- decentralized communication
+- eventual backend synchronization
+- idempotent transaction settlement
+
+This is a conceptual backend simulation and not a real banking-grade UPI implementation.
 
 ---
 
@@ -171,6 +185,21 @@ http://localhost:8080
 ```text
 http://localhost:8080/swagger-ui/index.html
 ```
+
+---
+
+# Core Backend Concepts Used
+
+- Gossip Protocol
+- Idempotency
+- Layered Architecture
+- REST API Design
+- DTO Pattern
+- Transaction Management
+- Mesh Network Simulation
+- Distributed Communication Concepts
+- JPA & ORM Mapping
+- Frontend API Integration
 
 ---
 
